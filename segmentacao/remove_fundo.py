@@ -1,28 +1,42 @@
 import cv2
 import numpy as np
 
-def remove_fundo(imagem: np.ndarray, mascara: np.ndarray) -> np.ndarray:
+def remove_fundo(mascara: np.ndarray, area_maxima: int = 40000) -> np.ndarray:
     """
-    Remove o fundo da imagem e mantém apenas os contornos da região segmentada.
+    Mantém apenas contornos fechados cujas áreas não excedem a área máxima especificada e que não tocam a borda da imagem.
 
     Parâmetros:
-        imagem (np.ndarray): Imagem original (em escala de cinza ou BGR).
-        mascara (np.ndarray): Máscara binária da segmentação.
+        mascara (np.ndarray): Máscara binária com os contornos.
+        area_maxima (int): Área máxima permitida para os contornos (default: 40000).
 
     Retorna:
-        np.ndarray: Imagem com os contornos destacados.
+        np.ndarray: Imagem com os contornos preenchidos em branco e o fundo preto.
     """
-    # Encontrar contornos na máscara binária
+    # Encontrar contornos na máscara
     contornos, _ = cv2.findContours(mascara, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Criar uma imagem preta do mesmo tamanho
-    imagem_contornos = np.zeros_like(imagem)
+    # Criar uma máscara para preencher os contornos
+    mascara_preenchida = np.zeros_like(mascara)
 
-    # Se a imagem for em escala de cinza, converter para BGR
-    if len(imagem.shape) == 2:
-        imagem_contornos = cv2.cvtColor(imagem_contornos, cv2.COLOR_GRAY2BGR)
+    # Obter as dimensões da imagem
+    altura, largura = mascara.shape
 
-    # Desenhar apenas os contornos na imagem preta
-    cv2.drawContours(imagem_contornos, contornos, -1, (0, 255, 0), 1)  # Contornos em verde
+    # Filtrar e preencher apenas os contornos fechados que não tocam a borda e têm áreas menores ou iguais à área máxima
+    for contorno in contornos:
+        # Verificar se o contorno é fechado
+        if cv2.arcLength(contorno, True) > 0:  # Verifica se o contorno tem comprimento positivo
+            # Verificar se o contorno toca a borda da imagem
+            toca_borda = False
+            for ponto in contorno:
+                x, y = ponto[0]
+                if x == 0 or x == largura - 1 or y == 0 or y == altura - 1:
+                    toca_borda = True
+                    break
 
-    return imagem_contornos
+            # Se o contorno não tocar a borda e tiver área menor ou igual à área máxima, preencher
+            if not toca_borda:
+                area = cv2.contourArea(contorno)
+                if area <= area_maxima:
+                    cv2.drawContours(mascara_preenchida, [contorno], -1, 255, -1)  # Preencher o contorno
+
+    return mascara_preenchida
