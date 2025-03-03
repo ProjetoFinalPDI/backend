@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
-from segmentacao.carregar import carregar_imagem
-import alternativas.hu_para_cinza as hu
-import matplotlib.pyplot as plt
+from segmentacao.remove_fundo import remove_fundo
 
 def criterio_homogeneidade(region: np.ndarray, limite_var: float) -> bool:
     """ Verifica se uma região é homogênea com base na variância. """
@@ -23,7 +21,9 @@ def aplicar_divisao_e_fusao(imagem: np.ndarray, limite_var: int, limite_media: i
         referencia_media (int): Referência de média para cálculo da diferença entre médias.
 
     Retorna:
-        np.ndarray: Imagem segmentada com os contornos dos pulmões destacados.
+        tuple: 
+            - Imagem original com os contornos dos pulmões destacados em vermelho.
+            - Imagem com apenas os contornos dos pulmões em branco sobre fundo preto.
 
     Resumo da teoria:
         Técnica consiste em fazer divisões na imagem principal e agrupar os blocos formados dessas divisões 
@@ -63,24 +63,4 @@ def aplicar_divisao_e_fusao(imagem: np.ndarray, limite_var: int, limite_media: i
     segmentos = cv2.morphologyEx(segmentos, cv2.MORPH_CLOSE, kernel, iterations=2)  # Fecha buracos
     segmentos = cv2.morphologyEx(segmentos, cv2.MORPH_OPEN, kernel, iterations=2)  # Remove ruídos pequenos
 
-    # Encontrar contornos
-    contornos, _ = cv2.findContours(segmentos, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Converter de escala de cinza para BGR
-    imagem_bgr = cv2.cvtColor(imagem, cv2.COLOR_GRAY2BGR)
-
-    # Desenhar contornos em azul
-    cv2.drawContours(imagem_bgr, contornos, -1, (0, 0, 255), 1)
-
-    return imagem_bgr
-
-# Carregar e processar a imagem
-imagem_dcm = carregar_imagem("data/pulmao2/155.dcm")
-imagem_hu = hu.converter_hu_para_cinza(imagem_dcm)
-imagem_div_fus = aplicar_divisao_e_fusao(imagem=imagem_hu, limite_var=40, limite_media=40, referencia_media=5)
-
-# Exibir a imagem resultante
-plt.figure(figsize=(5, 5))
-plt.imshow(imagem_div_fus, cmap='gray')
-plt.axis('off')
-plt.show()
+    return remove_fundo(segmentos)
