@@ -24,7 +24,6 @@ def aplicar_otsu(imagem_cinza: np.ndarray) -> tuple:
     _, mascara_pulmao = cv2.threshold(imagem_suavizada, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     
-
     return remove_fundo(mascara_pulmao)
 
 # Teste do algoritmo da remoção do fundo

@@ -47,7 +47,7 @@ def classificar_pixel(pixel_value: int) -> int:
 import cv2
 import numpy as np
 
-def limiarizacao_multipla(imagem_cinza: np.ndarray) -> np.ndarray:
+def limiarizacao_multipla(imagem_cinza: np.ndarray) -> tuple:
     """
     Aplica limiarização múltipla para segmentar as áreas de interesse na imagem.
 
@@ -84,11 +84,11 @@ def limiarizacao_multipla(imagem_cinza: np.ndarray) -> np.ndarray:
 
 
 # Carregar imagem DICOM e converter para escala de cinza
-imagem_dcm = carregar_imagem("data/pulmao2/105.dcm")
+imagem_dcm = carregar_imagem("data/pulmao2/200.dcm")
 imagem_hu = hu.converter_hu_para_cinza(imagem_dcm)
 
 # Aplicar a limiarização múltipla para classificar a imagem
-imagem_classificada = limiarizacao_multipla(imagem_hu)
+imagem_classificada, ignore = limiarizacao_multipla(imagem_hu)
 
 
 # Plotar as imagens

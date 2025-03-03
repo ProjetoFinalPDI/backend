@@ -43,7 +43,7 @@ def classificar_pixel(pixel_value: int) -> int:
         return 5  # u5 - áreas não classificadas
 
 
-def limiarizacao_multipla(imagem_cinza: np.ndarray) -> np.ndarray:
+def limiarizacao_multipla(imagem_cinza: np.ndarray) -> tuple:
     """
     Aplica limiarização múltipla para segmentar as áreas de interesse na imagem.
 
@@ -51,7 +51,8 @@ def limiarizacao_multipla(imagem_cinza: np.ndarray) -> np.ndarray:
         imagem_cinza (np.ndarray): Pixels da imagem de entrada em escala de cinza.
 
     Retorna:
-        np.ndarray: Imagem segmentada com classificação dos pixels com base nos intervalos de UH.
+        tuple: Imagem segmentada com classificação dos pixels com base nos intervalos
+        de UH e Contornos desta válidos desta imagem.
     """
     # Aplicar um filtro Gaussiano para suavizar a imagem
     imagem_suavizada = cv2.GaussianBlur(imagem_cinza, (5, 5), 0)  # Kernel size (5, 5) e sigma = 0
