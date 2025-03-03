@@ -39,7 +39,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    image = carregar_imagem(args.input_image)
+    image = carregar_imagem(args.image_de_entrada)  # Corrigido para 'args.image_de_entrada'
     print(image.max())
     visualize([apply_window(image, -300, 700)])
     cv2.destroyAllWindows()
