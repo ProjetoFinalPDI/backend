@@ -30,15 +30,11 @@ def aplicar_otsu(imagem_cinza: np.ndarray) -> tuple:
 # Teste do algoritmo da remoção do fundo
 imagem_dcm = carregar_imagem("data/pulmao2/90.dcm")
 imagem_hu = hu.converter_hu_para_cinza(imagem_dcm)
-imagem_suavizada = cv2.GaussianBlur(imagem_hu, (5,5), 0)
+imagem_suavizada = cv2.GaussianBlur(imagem_hu, (5, 5), 0)
 _, mascara_pulmao = cv2.threshold(imagem_suavizada, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-# Obter tanto a imagem com contornos quanto a imagem somente com contornos
-imagem_contornos_somente, contornos_validos = aplicar_otsu(imagem_hu)
-
-# Remover o fundo e preencher os contornos (usando a função otimizada)
-
-#imagem_sem_fundo = remove_fundo(imagem_contornos_somente, area_maxima=40000)
+# Obter tanto a imagem com contornos quanto o dicionário de contornos válidos
+imagem_contornos_somente, contornos_validos_dict = aplicar_otsu(imagem_hu)
 
 # Plotar as imagens
 plt.figure(figsize=(5, 5))
@@ -51,9 +47,11 @@ plt.imshow(imagem_contornos_somente, cmap='gray')
 plt.axis('off')
 plt.title("Contorno Original")
 
-
 # Criar uma imagem em branco para desenhar os contornos
 imagem_contornos = np.zeros((imagem_hu.shape[0], imagem_hu.shape[1], 3), dtype=np.uint8)
+
+# Converter os contornos do dicionário de volta para o formato NumPy
+contornos_validos = [np.array(contorno, dtype=np.int32).reshape(-1, 1, 2) for contorno in contornos_validos_dict.values()]
 
 # Desenhar os contornos válidos na imagem
 cv2.drawContours(imagem_contornos, contornos_validos, -1, (0, 0, 255), 2)  # Vermelho, espessura 2
@@ -63,6 +61,5 @@ plt.figure(figsize=(5, 5))
 plt.imshow(imagem_contornos)
 plt.axis('off')
 plt.title("Contornos Válidos")
-
 
 plt.show()
