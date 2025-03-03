@@ -1,13 +1,14 @@
 import cv2
 import numpy as np
 
-def remove_fundo(mascara: np.ndarray, area_maxima: int = 40000) -> np.ndarray:
+def remove_fundo(mascara: np.ndarray, area_minima: int = 1000, area_maxima: int = 40000) -> np.ndarray:
     """
-    Mantém apenas contornos fechados cujas áreas não excedem a área máxima especificada e que não tocam a borda da imagem.
+    Mantém apenas contornos fechados cujas áreas estão dentro do intervalo especificado e que não tocam a borda da imagem.
 
     Parâmetros:
         mascara (np.ndarray): Máscara binária com os contornos.
-        area_maxima (int): Área máxima permitida para os contornos (default: 40000) passível a validação.
+        area_minima (int): Área mínima permitida para os contornos (default: 1000).
+        area_maxima (int): Área máxima permitida para os contornos (default: 40000).
 
     Retorna:
         np.ndarray: Imagem com os novos contornos preenchidos em vermelho.
@@ -21,7 +22,7 @@ def remove_fundo(mascara: np.ndarray, area_maxima: int = 40000) -> np.ndarray:
     # Obter as dimensões da imagem
     altura, largura = mascara.shape
 
-    # Filtrar e desenhar apenas os contornos fechados que não tocam a borda e têm áreas menores ou iguais à área máxima
+    # Filtrar e desenhar apenas os contornos fechados que não tocam a borda e têm áreas dentro do intervalo especificado
     for contorno in contornos:
         # Verificar se o contorno é fechado
         if cv2.arcLength(contorno, True) > 0:  # Verifica se o contorno tem comprimento positivo
@@ -33,11 +34,11 @@ def remove_fundo(mascara: np.ndarray, area_maxima: int = 40000) -> np.ndarray:
                     toca_borda = True
                     break
 
-            # Se o contorno não tocar a borda e tiver área menor ou igual à área máxima, desenhar em vermelho
+            # Se o contorno não tocar a borda e tiver área dentro do intervalo, desenhar em vermelho
             if not toca_borda:
                 area = cv2.contourArea(contorno)
-                if area <= area_maxima:
-                    # Desenhar o contorno válido em azul na imagem de contornos vermelhos
-                    cv2.drawContours(pulmao_contornado, [contorno], -1, (255, 0, 0), 2)  # vermelho
+                if area_minima <= area <= area_maxima:
+                    # Desenhar o contorno válido em vermelho na imagem de contornos vermelhos
+                    cv2.drawContours(pulmao_contornado, [contorno], -1, (0, 0, 255), 2)  # Vermelho
 
     return pulmao_contornado
