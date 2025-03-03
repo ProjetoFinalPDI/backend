@@ -23,20 +23,9 @@ def aplicar_otsu(imagem_cinza: np.ndarray) -> tuple:
     # Aplicar threshold de Otsu para segmentação
     _, mascara_pulmao = cv2.threshold(imagem_suavizada, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-    # Encontrar contornos
-    contornos, _ = cv2.findContours(mascara_pulmao, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
 
-    # Converter de escala de cinza para BGR
-    imagem_bgr = cv2.cvtColor(imagem_cinza, cv2.COLOR_GRAY2BGR)
-
-    # Desenhar contornos na imagem original (em vermelho)
-    cv2.drawContours(imagem_bgr, contornos, -1, (0, 0, 255), 1)
-
-    # Criar uma imagem em preto e branco apenas com os contornos
-    contornos_imagem = np.zeros_like(imagem_cinza)  # Criar uma imagem preta
-    cv2.drawContours(contornos_imagem, contornos, -1, 255, 1)  # Desenhar contornos em branco
-
-    return mascara_pulmao
+    return remove_fundo(mascara_pulmao)
 
 # Teste do algoritmo da remoção do fundo
 imagem_dcm = carregar_imagem("data/pulmao2/90.dcm")
@@ -45,11 +34,11 @@ imagem_suavizada = cv2.GaussianBlur(imagem_hu, (5,5), 0)
 _, mascara_pulmao = cv2.threshold(imagem_suavizada, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
 # Obter tanto a imagem com contornos quanto a imagem somente com contornos
-imagem_contornos_somente = aplicar_otsu(imagem_hu)
+imagem_contornos_somente, contornos_validos = aplicar_otsu(imagem_hu)
 
 # Remover o fundo e preencher os contornos (usando a função otimizada)
 
-imagem_sem_fundo = remove_fundo(imagem_contornos_somente, area_maxima=40000)
+#imagem_sem_fundo = remove_fundo(imagem_contornos_somente, area_maxima=40000)
 
 # Plotar as imagens
 plt.figure(figsize=(5, 5))
@@ -63,9 +52,17 @@ plt.axis('off')
 plt.title("Contorno Original")
 
 
+# Criar uma imagem em branco para desenhar os contornos
+imagem_contornos = np.zeros((imagem_hu.shape[0], imagem_hu.shape[1], 3), dtype=np.uint8)
+
+# Desenhar os contornos válidos na imagem
+cv2.drawContours(imagem_contornos, contornos_validos, -1, (0, 0, 255), 2)  # Vermelho, espessura 2
+
+# Plotar a imagem com os contornos
 plt.figure(figsize=(5, 5))
-plt.imshow(imagem_sem_fundo, cmap='gray')
+plt.imshow(imagem_contornos)
 plt.axis('off')
-plt.title("Novo contorno sem fundo")
+plt.title("Contornos Válidos")
+
 
 plt.show()
