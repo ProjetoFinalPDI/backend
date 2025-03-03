@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
 
-def remove_fundo(mascara: np.ndarray, area_minima: int = 1000, area_maxima: int = 40000) -> np.ndarray:
+def remove_fundo(mascara: np.ndarray, area_minima: int = 3000, area_maxima: int = 40000) -> np.ndarray:
     """
     Mantém apenas contornos fechados cujas áreas estão dentro do intervalo especificado e que não tocam a borda da imagem.
 
     Parâmetros:
         mascara (np.ndarray): Máscara binária com os contornos.
-        area_minima (int): Área mínima permitida para os contornos (default: 1000).
+        area_minima (int): Área mínima permitida para os contornos (default: 3000).
         area_maxima (int): Área máxima permitida para os contornos (default: 40000).
 
     Retorna:
