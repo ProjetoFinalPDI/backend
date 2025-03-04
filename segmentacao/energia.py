@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+
 def energia_externa(
     imagem: np.ndarray,
     probabilidade: np.ndarray,
@@ -33,5 +34,3 @@ def energia_externa(
     energia[~mask] = 0
 
     return energia
-
-

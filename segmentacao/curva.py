@@ -29,7 +29,7 @@ def inicializa_curva(
 
     return curva.astype(np.int16)
 
-  
+
 def crisp_inicial(
     imagem: np.ndarray, lim_infY: int, lim_supY: int, lim_infX: int, lim_supX: int
 ) -> np.ndarray:
