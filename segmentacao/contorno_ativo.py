@@ -1,10 +1,14 @@
 import logging
+import importlib
+
+import segmentacao.curva1
+importlib.reload(segmentacao.curva1)            
 
 from segmentacao.classificacao import probabilidade_classes, calcula_ocorrencias_classes
 import numpy as np
 import time
 import numba
-from segmentacao.curva import (
+from segmentacao.curva1 import (
     crisp_inicial,
     inicializa_curva,
     adicionar_pontos,
@@ -16,12 +20,12 @@ from segmentacao.carregar import carregar_imagem
 logger = logging.getLogger(__name__)
 
 
-@numba.njit(parallel=True)
+@numba.njit(parallel=False)
 def minimize_curve(curva, energia_crisp, area_de_busca):
     nova_curva = np.copy(curva)
     for i in numba.prange(len(nova_curva)):
         nova_curva[i] = minimiza_energia(
-            curva, i, energia_crisp, area_de_busca=area_de_busca
+            nova_curva, i, energia_crisp, area_de_busca=area_de_busca
         )
     return nova_curva
 
