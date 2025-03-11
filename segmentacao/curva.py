@@ -1,6 +1,5 @@
 from numba import numba
 import numpy as np
-from math import atan2, sin, cos, pi
 
 
 def crisp_inicial(
@@ -104,7 +103,7 @@ def calcular_angulo(p1: np.ndarray, p2: np.ndarray, p3: np.ndarray) -> float:
     return np.degrees(np.arccos(cos_theta))
 
 
-def remover_pontos(curva: np.ndarray, alpha: float = 20) -> np.ndarray:
+def remover_pontos(curva: np.ndarray, alpha: float = 20)-> np.ndarray:
     """
     Recebe pontos da curva e um ângulo mínimo para remover pontos da curva.
 
@@ -141,7 +140,7 @@ def no_pulmao(ponto, imagem):
     Returns:
         bool: True se o ponto está no pulmão, False caso contrário
     """
-    x, y = int(round(ponto[0])), int(round(ponto[1]))
+    x, y = ponto
 
     # Verificar se o ponto está dentro dos limites da imagem
     if x < 0 or x >= imagem.shape[1] or y < 0 or y >= imagem.shape[0]:
@@ -203,17 +202,16 @@ def adicionar_pontos(curva, imagem, d_max):
 
     # Verifica cada par consecutivo de pontos
     for i in range(n):
-        # Ponto atual e próximo (o último ponto conecta com o primeiro)
-        v1 = curva[i]
-        v2 = curva[(i + 1) % n]
+        v1 = curva[i-1]
+        v2 = curva[i]
 
         # Calcula a distância euclidiana entre os pontos
         distancia = np.sqrt(np.sum((v2 - v1) ** 2))
 
         # Se a distância for maior que a máxima, adiciona um ponto entre eles
         if distancia > d_max:
-            # Calcula o ponto médio entre v1 e v2
-            ponto_medio = (v1 + v2) / 2
+            # Calcula o ponto médio entre v1 e v2 (int)
+            ponto_medio = (v1 + v2) // 2
 
             # Verifica se o ponto médio está no pulmão
             if no_pulmao(ponto_medio, imagem):
@@ -224,24 +222,24 @@ def adicionar_pontos(curva, imagem, d_max):
                 # dentro do pulmão
 
                 # Calcula o ângulo da semi-reta formada por v1 e v2
-                angulo = atan2(v2[1] - v1[1], v2[0] - v1[0])
+                angulo = np.arctan2(v2[1] - v1[1], v2[0] - v1[0])
 
                 # Calcula as direções perpendiculares
-                angulo1 = angulo + pi / 2
-                angulo2 = angulo - pi / 2
+                angulo1 = angulo + np.pi / 2
+                angulo2 = angulo - np.pi / 2
 
                 # Pontos nas duas direções perpendiculares (pequena distância
                 # para verificação)
                 p1 = np.array(
                     [
-                        ponto_medio[0] + 5 * cos(angulo1),
-                        ponto_medio[1] + 5 * sin(angulo1),
+                        ponto_medio[0] + 5 * np.cos(angulo1),
+                        ponto_medio[1] + 5 * np.sin(angulo1),
                     ]
                 )
                 p2 = np.array(
                     [
-                        ponto_medio[0] + 5 * cos(angulo2),
-                        ponto_medio[1] + 5 * sin(angulo2),
+                        ponto_medio[0] + 5 * np.cos(angulo2),
+                        ponto_medio[1] + 5 * np.sin(angulo2),
                     ]
                 )
 
@@ -251,11 +249,11 @@ def adicionar_pontos(curva, imagem, d_max):
                 # Procura pelo primeiro ponto na direção correta que está
                 # dentro do pulmão
                 encontrou_ponto = False
-                for dist in range(1, 51):  # Testa distâncias de 1 a 50
+                for dist in range(1, 31):  # Testa distâncias de 1 a 50
                     ponto_teste = np.array(
                         [
-                            ponto_medio[0] + dist * cos(angulo_correto),
-                            ponto_medio[1] + dist * sin(angulo_correto),
+                            (ponto_medio[0] + dist * np.cos(angulo_correto)).astype(np.int16),
+                            (ponto_medio[1] + dist * np.sin(angulo_correto)).astype(np.int16),
                         ]
                     )
 
@@ -266,8 +264,8 @@ def adicionar_pontos(curva, imagem, d_max):
 
                 # Se não encontrou nenhum ponto válido, adiciona o ponto médio
                 # mesmo assim
-                if not encontrou_ponto:
-                    pontos_a_adicionar.append(ponto_medio)
+                # if not encontrou_ponto:
+                #     pontos_a_adicionar.append(ponto_medio)
 
     # # Adiciona os novos pontos à curva, em ordem
     # pontos_a_adicionar.sort(key=lambda x: x[0])
@@ -285,6 +283,6 @@ def adicionar_pontos(curva, imagem, d_max):
             nova_curva[:, 1] - centroid[1], nova_curva[:, 0] - centroid[0]
         )
 
-        return nova_curva[np.argsort(atan2_nova_curva)]
+        return nova_curva[np.argsort(atan2_nova_curva)].astype(np.int16)
     else:
-        return nova_curva
+        return nova_curva.astype(np.int16)
